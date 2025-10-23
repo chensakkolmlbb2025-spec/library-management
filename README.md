@@ -1,73 +1,150 @@
-# Welcome to your Lovable project
+# University Library System Management
 
-## Project info
+A modern, beautiful library management system built with React.js featuring iOS-inspired glassmorphism design and role-based access control.
 
-**URL**: https://lovable.dev/projects/1d9c4b58-9b5e-4a1b-a84f-9b9a9453c5ad
+## Features
 
-## How can I edit this code?
+### Student Portal
+- Browse and search library catalog
+- Place borrow requests and reservations
+- View current loans and due dates
+- Track fines and overdue items
+- Renew books
 
-There are several ways of editing your application.
+### Staff Dashboard
+- Approve/reject borrow requests
+- Manage inventory (add, update books)
+- Check-out and check-in books
+- Manage holds and queues
 
-**Use Lovable**
+### Admin Panel
+- Create and manage user accounts
+- Assign roles and permissions
+- View reports and analytics
+- Configure system settings (loan periods, fine rates)
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/1d9c4b58-9b5e-4a1b-a84f-9b9a9453c5ad) and start prompting.
+## Tech Stack
 
-Changes made via Lovable will be committed automatically to this repo.
+- **React 18** with TypeScript
+- **Vite** for fast development
+- **Tailwind CSS** with custom glassmorphism design system
+- **Axios** for API communication
+- **React Router** for navigation
+- **Context API** for state management
+- **Shadcn UI** components
+- **Lucide React** icons
 
-**Use your preferred IDE**
+## Getting Started
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+### Prerequisites
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+- Node.js (v18 or higher)
+- npm or yarn
 
-Follow these steps:
+### Installation
 
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
+1. Clone the repository:
+```bash
+git clone <repository-url>
+cd university-library-system
+```
 
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
+2. Install dependencies:
+```bash
+npm install
+```
 
-# Step 3: Install the necessary dependencies.
-npm i
+3. Create a `.env` file in the root directory:
+```env
+VITE_API_URL=http://localhost:5000/api
+```
 
-# Step 4: Start the development server with auto-reloading and an instant preview.
+4. Start the development server:
+```bash
 npm run dev
 ```
 
-**Edit a file directly in GitHub**
+The application will be available at `http://localhost:8080`
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+## Demo Accounts
 
-**Use GitHub Codespaces**
+Use these credentials to test different roles:
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+- **Student**: student@uni.edu / student123
+- **Staff**: staff@uni.edu / staff123
+- **Admin**: admin@uni.edu / admin123
 
-## What technologies are used for this project?
+## Backend API
 
-This project is built with:
+This frontend expects a REST API with the following endpoints:
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+### Authentication
+- `POST /api/auth/login` - Login with email and password
 
-## How can I deploy this project?
+### Books
+- `GET /api/books?search={query}` - Search books
+- `POST /api/books` - Add new book (Staff/Admin)
+- `PATCH /api/books/:id` - Update book (Staff/Admin)
 
-Simply open [Lovable](https://lovable.dev/projects/1d9c4b58-9b5e-4a1b-a84f-9b9a9453c5ad) and click on Share -> Publish.
+### Borrow Requests
+- `GET /api/requests` - Get all requests (Staff)
+- `POST /api/borrow-requests` - Create borrow request (Student)
+- `PATCH /api/requests/:id/approve` - Approve request (Staff)
+- `PATCH /api/requests/:id/reject` - Reject request (Staff)
 
-## Can I connect a custom domain to my Lovable project?
+### User Management
+- `GET /api/users` - Get all users (Admin)
+- `POST /api/users` - Create user (Admin)
+- `PATCH /api/users/:id` - Update user (Admin)
 
-Yes, you can!
+### Loans & Fines
+- `GET /api/user/loans` - Get user's loans
+- `GET /api/user/fines` - Get user's fines
+- `PATCH /api/loans/:id/renew` - Renew loan
 
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
+### Settings
+- `GET /api/settings` - Get system settings (Admin)
+- `PATCH /api/settings` - Update settings (Admin)
 
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/features/custom-domain#custom-domain)
+## Design System
+
+The application uses a beautiful iOS-inspired glassmorphism design with:
+
+- **Primary Color**: iOS Blue (#007AFF)
+- **Background**: Cold White (#F9FAFB)
+- **Glass Effects**: Translucent backgrounds with blur
+- **Responsive**: Mobile-first design
+- **Accessible**: WCAG compliant contrast ratios
+
+## Project Structure
+
+```
+src/
+├── components/
+│   ├── ui/           # Shadcn UI components
+│   ├── Layout.tsx    # Main layout wrapper
+│   └── ProtectedRoute.tsx
+├── context/
+│   └── AuthContext.tsx
+├── pages/
+│   ├── Login.tsx
+│   ├── StudentDashboard.tsx
+│   ├── StaffDashboard.tsx
+│   ├── AdminDashboard.tsx
+│   └── Unauthorized.tsx
+├── services/
+│   └── api.ts        # Axios configuration
+└── App.tsx
+```
+
+## Building for Production
+
+```bash
+npm run build
+```
+
+The optimized files will be in the `dist` directory.
+
+## License
+
+MIT License - feel free to use this project for educational purposes.
