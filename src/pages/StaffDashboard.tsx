@@ -6,20 +6,36 @@ import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { CheckCircle, XCircle, Package, UserCheck, BookPlus } from 'lucide-react';
-import { api } from '@/services/api';
+import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { useAuth } from '@/context/AuthContext';
 
 interface BorrowRequest {
   id: string;
-  student: { name: string; email: string };
-  book: { title: string; author: string };
-  requestDate: string;
-  status: 'PENDING' | 'APPROVED' | 'REJECTED';
+  request_date: string;
+  status: string;
+  profiles: {
+    full_name: string;
+    email: string;
+  };
+  books: {
+    title: string;
+    author: string;
+  };
 }
 
 export default function StaffDashboard() {
+  const { user } = useAuth();
   const [requests, setRequests] = useState<BorrowRequest[]>([]);
-  const [newBook, setNewBook] = useState({ title: '', author: '', isbn: '', copies: 1 });
+  const [newBook, setNewBook] = useState({ 
+    title: '', 
+    author: '', 
+    isbn: '', 
+    genre: '',
+    description: '',
+    total_copies: 1,
+    available_copies: 1
+  });
 
   useEffect(() => {
     fetchRequests();
@@ -27,34 +43,78 @@ export default function StaffDashboard() {
 
   const fetchRequests = async () => {
     try {
-      const response = await api.get('/requests');
-      setRequests(response.data);
+      const { data, error } = await supabase
+        .from('borrow_requests')
+        .select('*, profiles!borrow_requests_user_id_fkey(full_name, email), books(title, author)')
+        .order('request_date', { ascending: false });
+
+      if (error) throw error;
+      setRequests(data || []);
     } catch (error) {
-      console.error('Failed to fetch requests');
+      console.error('Failed to fetch requests:', error);
     }
   };
 
-  const handleRequest = async (requestId: string, action: 'approve' | 'reject') => {
+  const handleRequest = async (requestId: string, action: 'APPROVED' | 'REJECTED') => {
     try {
-      await api.patch(`/requests/${requestId}/${action}`);
-      toast.success(`Request ${action}d successfully!`);
+      const { error } = await supabase
+        .from('borrow_requests')
+        .update({ 
+          status: action,
+          processed_date: new Date().toISOString(),
+          processed_by: user?.id
+        })
+        .eq('id', requestId);
+
+      if (error) throw error;
+      
+      toast.success(`Request ${action.toLowerCase()} successfully!`);
       fetchRequests();
     } catch (error: any) {
-      toast.error(error.response?.data?.message || `Failed to ${action} request`);
+      toast.error(error.message || `Failed to ${action.toLowerCase()} request`);
     }
   };
 
   const addBook = async () => {
+    if (!newBook.title || !newBook.author || !newBook.isbn) {
+      toast.error('Please fill in all required fields');
+      return;
+    }
+
     try {
-      await api.post('/books', newBook);
+      const { error } = await supabase
+        .from('books')
+        .insert([{
+          ...newBook,
+          available_copies: newBook.total_copies
+        }]);
+
+      if (error) throw error;
+      
       toast.success('Book added successfully!');
-      setNewBook({ title: '', author: '', isbn: '', copies: 1 });
+      setNewBook({ 
+        title: '', 
+        author: '', 
+        isbn: '', 
+        genre: '',
+        description: '',
+        total_copies: 1,
+        available_copies: 1
+      });
     } catch (error: any) {
-      toast.error(error.response?.data?.message || 'Failed to add book');
+      if (error.code === '23505') {
+        toast.error('A book with this ISBN already exists');
+      } else {
+        toast.error(error.message || 'Failed to add book');
+      }
     }
   };
 
   const pendingRequests = requests.filter(r => r.status === 'PENDING');
+  const processedToday = requests.filter(r => 
+    r.status !== 'PENDING' && 
+    new Date(r.request_date).toDateString() === new Date().toDateString()
+  ).length;
 
   return (
     <Layout>
@@ -86,9 +146,7 @@ export default function StaffDashboard() {
               </div>
               <div>
                 <p className="text-sm text-muted-foreground">Processed Today</p>
-                <p className="text-2xl font-bold">
-                  {requests.filter(r => r.status !== 'PENDING').length}
-                </p>
+                <p className="text-2xl font-bold">{processedToday}</p>
               </div>
             </div>
           </Card>
@@ -99,8 +157,8 @@ export default function StaffDashboard() {
                 <BookPlus className="h-6 w-6 text-primary" />
               </div>
               <div>
-                <p className="text-sm text-muted-foreground">Books in System</p>
-                <p className="text-2xl font-bold">-</p>
+                <p className="text-sm text-muted-foreground">Total Requests</p>
+                <p className="text-2xl font-bold">{requests.length}</p>
               </div>
             </div>
           </Card>
@@ -110,7 +168,6 @@ export default function StaffDashboard() {
           <TabsList className="glass-strong">
             <TabsTrigger value="requests">Borrow Requests</TabsTrigger>
             <TabsTrigger value="inventory">Manage Inventory</TabsTrigger>
-            <TabsTrigger value="checkout">Check-Out/In</TabsTrigger>
           </TabsList>
 
           <TabsContent value="requests" className="space-y-4">
@@ -124,19 +181,19 @@ export default function StaffDashboard() {
                     <Card key={request.id} className="glass p-4 border-0">
                       <div className="flex justify-between items-start">
                         <div className="flex-1">
-                          <h4 className="font-semibold">{request.book.title}</h4>
-                          <p className="text-sm text-muted-foreground">{request.book.author}</p>
+                          <h4 className="font-semibold">{request.books.title}</h4>
+                          <p className="text-sm text-muted-foreground">{request.books.author}</p>
                           <p className="text-sm text-muted-foreground mt-2">
-                            Requested by: {request.student.name} ({request.student.email})
+                            Requested by: {request.profiles.full_name} ({request.profiles.email})
                           </p>
                           <p className="text-xs text-muted-foreground">
-                            Date: {new Date(request.requestDate).toLocaleDateString()}
+                            Date: {new Date(request.request_date).toLocaleDateString()}
                           </p>
                         </div>
                         <div className="flex gap-2">
                           <Button
                             size="sm"
-                            onClick={() => handleRequest(request.id, 'approve')}
+                            onClick={() => handleRequest(request.id, 'APPROVED')}
                             className="bg-success hover:bg-success/90"
                           >
                             <CheckCircle className="h-4 w-4 mr-1" />
@@ -145,7 +202,7 @@ export default function StaffDashboard() {
                           <Button
                             size="sm"
                             variant="outline"
-                            onClick={() => handleRequest(request.id, 'reject')}
+                            onClick={() => handleRequest(request.id, 'REJECTED')}
                             className="text-destructive border-destructive hover:bg-destructive/10"
                           >
                             <XCircle className="h-4 w-4 mr-1" />
@@ -165,28 +222,45 @@ export default function StaffDashboard() {
               <h3 className="text-xl font-bold mb-4">Add New Book</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <Input
-                  placeholder="Book Title"
+                  placeholder="Book Title *"
                   value={newBook.title}
                   onChange={(e) => setNewBook({ ...newBook, title: e.target.value })}
                   className="glass"
                 />
                 <Input
-                  placeholder="Author"
+                  placeholder="Author *"
                   value={newBook.author}
                   onChange={(e) => setNewBook({ ...newBook, author: e.target.value })}
                   className="glass"
                 />
                 <Input
-                  placeholder="ISBN"
+                  placeholder="ISBN *"
                   value={newBook.isbn}
                   onChange={(e) => setNewBook({ ...newBook, isbn: e.target.value })}
                   className="glass"
                 />
                 <Input
+                  placeholder="Genre"
+                  value={newBook.genre}
+                  onChange={(e) => setNewBook({ ...newBook, genre: e.target.value })}
+                  className="glass"
+                />
+                <Input
+                  placeholder="Description"
+                  value={newBook.description}
+                  onChange={(e) => setNewBook({ ...newBook, description: e.target.value })}
+                  className="glass md:col-span-2"
+                />
+                <Input
                   type="number"
+                  min="1"
                   placeholder="Number of Copies"
-                  value={newBook.copies}
-                  onChange={(e) => setNewBook({ ...newBook, copies: parseInt(e.target.value) || 1 })}
+                  value={newBook.total_copies}
+                  onChange={(e) => setNewBook({ 
+                    ...newBook, 
+                    total_copies: parseInt(e.target.value) || 1,
+                    available_copies: parseInt(e.target.value) || 1
+                  })}
                   className="glass"
                 />
               </div>
@@ -194,21 +268,6 @@ export default function StaffDashboard() {
                 <BookPlus className="h-4 w-4 mr-2" />
                 Add Book to Library
               </Button>
-            </div>
-          </TabsContent>
-
-          <TabsContent value="checkout">
-            <div className="glass-strong rounded-2xl p-6">
-              <h3 className="text-xl font-bold mb-4">Check-Out / Check-In</h3>
-              <p className="text-muted-foreground">Scan or search for books and users to process checkouts and returns</p>
-              <div className="mt-6 space-y-4">
-                <Input placeholder="Scan or enter Book ISBN..." className="glass" />
-                <Input placeholder="Scan or enter Student ID..." className="glass" />
-                <div className="flex gap-2">
-                  <Button className="bg-primary hover:bg-primary-hover flex-1">Check Out</Button>
-                  <Button variant="outline" className="flex-1">Check In</Button>
-                </div>
-              </div>
             </div>
           </TabsContent>
         </Tabs>

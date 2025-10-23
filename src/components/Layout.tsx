@@ -9,16 +9,16 @@ interface LayoutProps {
 }
 
 export const Layout = ({ children }: LayoutProps) => {
-  const { user, logout } = useAuth();
+  const { profile, logout } = useAuth();
   const navigate = useNavigate();
 
-  const handleLogout = () => {
-    logout();
+  const handleLogout = async () => {
+    await logout();
     navigate('/login');
   };
 
   const getRoleDashboard = () => {
-    switch (user?.role) {
+    switch (profile?.role) {
       case 'STUDENT':
         return '/student';
       case 'STAFF':
@@ -39,7 +39,7 @@ export const Layout = ({ children }: LayoutProps) => {
             <BookOpen className="h-8 w-8 text-primary" />
             <div>
               <h1 className="text-xl font-bold text-foreground">University Library</h1>
-              <p className="text-xs text-muted-foreground">{user?.role || 'System'}</p>
+              <p className="text-xs text-muted-foreground">{profile?.role || 'System'}</p>
             </div>
           </div>
           
@@ -56,7 +56,7 @@ export const Layout = ({ children }: LayoutProps) => {
             
             <div className="glass rounded-full px-4 py-2 flex items-center gap-2">
               <User className="h-4 w-4 text-primary" />
-              <span className="text-sm font-medium">{user?.name}</span>
+              <span className="text-sm font-medium">{profile?.full_name}</span>
             </div>
             
             <Button

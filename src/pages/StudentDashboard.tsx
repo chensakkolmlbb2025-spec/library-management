@@ -5,26 +5,30 @@ import { Input } from '@/components/ui/input';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Search, BookOpen, Calendar, DollarSign, Clock } from 'lucide-react';
-import { api } from '@/services/api';
+import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { useAuth } from '@/context/AuthContext';
 
 interface Book {
   id: string;
   title: string;
   author: string;
   isbn: string;
-  availableCopies: number;
-  totalCopies: number;
+  description: string | null;
+  genre: string | null;
+  available_copies: number;
+  total_copies: number;
 }
 
 interface Loan {
   id: string;
-  book: Book;
-  dueDate: string;
-  overdue: boolean;
+  due_date: string;
+  status: string;
+  books: Book;
 }
 
 export default function StudentDashboard() {
+  const { user } = useAuth();
   const [searchQuery, setSearchQuery] = useState('');
   const [books, setBooks] = useState<Book[]>([]);
   const [loans, setLoans] = useState<Loan[]>([]);
@@ -38,44 +42,84 @@ export default function StudentDashboard() {
 
   const fetchLoans = async () => {
     try {
-      const response = await api.get('/user/loans');
-      setLoans(response.data);
+      const { data, error } = await supabase
+        .from('loans')
+        .select('*, books(*)')
+        .eq('user_id', user?.id)
+        .in('status', ['ACTIVE', 'OVERDUE']);
+
+      if (error) throw error;
+      setLoans(data || []);
     } catch (error) {
-      console.error('Failed to fetch loans');
+      console.error('Failed to fetch loans:', error);
     }
   };
 
   const fetchFines = async () => {
     try {
-      const response = await api.get('/user/fines');
-      setFines(response.data.total || 0);
+      const { data, error } = await supabase
+        .from('fines')
+        .select('amount')
+        .eq('user_id', user?.id)
+        .eq('paid', false);
+
+      if (error) throw error;
+      
+      const total = data?.reduce((sum, fine) => sum + Number(fine.amount), 0) || 0;
+      setFines(total);
     } catch (error) {
-      console.error('Failed to fetch fines');
+      console.error('Failed to fetch fines:', error);
     }
   };
 
   const searchBooks = async () => {
-    if (!searchQuery.trim()) return;
+    if (!searchQuery.trim()) {
+      toast.error('Please enter a search query');
+      return;
+    }
     
     setIsLoading(true);
     try {
-      const response = await api.get('/books', { params: { search: searchQuery } });
-      setBooks(response.data);
-    } catch (error) {
+      const { data, error } = await supabase
+        .from('books')
+        .select('*')
+        .or(`title.ilike.%${searchQuery}%,author.ilike.%${searchQuery}%,isbn.ilike.%${searchQuery}%`)
+        .limit(20);
+
+      if (error) throw error;
+      setBooks(data || []);
+      
+      if (data?.length === 0) {
+        toast.info('No books found');
+      }
+    } catch (error: any) {
       toast.error('Failed to search books');
+      console.error(error);
     } finally {
       setIsLoading(false);
     }
   };
 
   const requestBorrow = async (bookId: string) => {
+    if (!user?.id) return;
+    
     try {
-      await api.post('/borrow-requests', { bookId });
+      const { error } = await supabase
+        .from('borrow_requests')
+        .insert({
+          user_id: user.id,
+          book_id: bookId,
+        });
+
+      if (error) throw error;
       toast.success('Borrow request submitted successfully!');
     } catch (error: any) {
-      toast.error(error.response?.data?.message || 'Failed to submit request');
+      toast.error(error.message || 'Failed to submit request');
+      console.error(error);
     }
   };
+
+  const overdueLoans = loans.filter(l => l.status === 'OVERDUE' || new Date(l.due_date) < new Date());
 
   return (
     <Layout>
@@ -107,7 +151,7 @@ export default function StudentDashboard() {
               </div>
               <div>
                 <p className="text-sm text-muted-foreground">Overdue Items</p>
-                <p className="text-2xl font-bold">{loans.filter(l => l.overdue).length}</p>
+                <p className="text-2xl font-bold">{overdueLoans.length}</p>
               </div>
             </div>
           </Card>
@@ -140,7 +184,7 @@ export default function StudentDashboard() {
               />
             </div>
             <Button onClick={searchBooks} disabled={isLoading} className="bg-primary hover:bg-primary-hover">
-              Search
+              {isLoading ? 'Searching...' : 'Search'}
             </Button>
           </div>
 
@@ -149,20 +193,25 @@ export default function StudentDashboard() {
             <div className="mt-6 space-y-3">
               {books.map((book) => (
                 <Card key={book.id} className="glass p-4 border-0">
-                  <div className="flex justify-between items-start">
+                  <div className="flex justify-between items-start gap-4">
                     <div className="flex-1">
                       <h4 className="font-semibold text-lg">{book.title}</h4>
                       <p className="text-sm text-muted-foreground">{book.author}</p>
-                      <p className="text-xs text-muted-foreground mt-1">ISBN: {book.isbn}</p>
+                      {book.genre && (
+                        <p className="text-xs text-muted-foreground mt-1">Genre: {book.genre}</p>
+                      )}
+                      <p className="text-xs text-muted-foreground">ISBN: {book.isbn}</p>
                       <div className="mt-2">
-                        <Badge variant={book.availableCopies > 0 ? 'default' : 'destructive'}>
-                          {book.availableCopies > 0 ? `${book.availableCopies} Available` : 'Not Available'}
+                        <Badge variant={book.available_copies > 0 ? 'default' : 'destructive'}>
+                          {book.available_copies > 0 
+                            ? `${book.available_copies} of ${book.total_copies} Available` 
+                            : 'Not Available'}
                         </Badge>
                       </div>
                     </div>
                     <Button
                       onClick={() => requestBorrow(book.id)}
-                      disabled={book.availableCopies === 0}
+                      disabled={book.available_copies === 0}
                       size="sm"
                       className="bg-primary hover:bg-primary-hover"
                     >
@@ -182,26 +231,26 @@ export default function StudentDashboard() {
             <p className="text-muted-foreground text-center py-8">No active loans</p>
           ) : (
             <div className="space-y-3">
-              {loans.map((loan) => (
-                <Card key={loan.id} className="glass p-4 border-0">
-                  <div className="flex justify-between items-start">
-                    <div>
-                      <h4 className="font-semibold">{loan.book.title}</h4>
-                      <p className="text-sm text-muted-foreground">{loan.book.author}</p>
-                      <div className="flex items-center gap-2 mt-2 text-sm">
-                        <Calendar className="h-4 w-4" />
-                        <span className={loan.overdue ? 'text-destructive' : 'text-muted-foreground'}>
-                          Due: {new Date(loan.dueDate).toLocaleDateString()}
-                        </span>
-                        {loan.overdue && <Badge variant="destructive">Overdue</Badge>}
+              {loans.map((loan) => {
+                const isOverdue = new Date(loan.due_date) < new Date();
+                return (
+                  <Card key={loan.id} className="glass p-4 border-0">
+                    <div className="flex justify-between items-start">
+                      <div>
+                        <h4 className="font-semibold">{loan.books.title}</h4>
+                        <p className="text-sm text-muted-foreground">{loan.books.author}</p>
+                        <div className="flex items-center gap-2 mt-2 text-sm">
+                          <Calendar className="h-4 w-4" />
+                          <span className={isOverdue ? 'text-destructive font-medium' : 'text-muted-foreground'}>
+                            Due: {new Date(loan.due_date).toLocaleDateString()}
+                          </span>
+                          {isOverdue && <Badge variant="destructive">Overdue</Badge>}
+                        </div>
                       </div>
                     </div>
-                    <Button size="sm" variant="outline">
-                      Renew
-                    </Button>
-                  </div>
-                </Card>
-              ))}
+                  </Card>
+                );
+              })}
             </div>
           )}
         </div>

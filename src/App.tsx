@@ -15,11 +15,11 @@ import NotFound from "./pages/NotFound";
 const queryClient = new QueryClient();
 
 const DashboardRedirect = () => {
-  const { user } = useAuth();
+  const { profile } = useAuth();
   
-  if (!user) return <Navigate to="/login" replace />;
+  if (!profile) return <Navigate to="/login" replace />;
   
-  switch (user.role) {
+  switch (profile.role) {
     case 'STUDENT':
       return <Navigate to="/student" replace />;
     case 'STAFF':
