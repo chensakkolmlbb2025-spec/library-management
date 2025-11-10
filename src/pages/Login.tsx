@@ -98,25 +98,6 @@ export default function Login() {
               {isLoading ? "Signing in..." : "Sign In"}
             </Button>
           </form>
-          
-          {/* Demo credentials */}
-          <div className="mt-6 pt-6 border-t border-white/40">
-            <p className="text-xs text-muted-foreground/90 text-center mb-3 font-semibold uppercase tracking-wide">Demo Credentials</p>
-            <div className="space-y-2 text-xs">
-              <div className="glass-strong rounded-lg p-3 border border-white/50 bg-white/20">
-                <p className="font-semibold text-primary mb-0.5">Student:</p>
-                <p className="text-foreground/80 font-mono text-[11px]">student@uni.edu / student123</p>
-              </div>
-              <div className="glass-strong rounded-lg p-3 border border-white/50 bg-white/20">
-                <p className="font-semibold text-primary mb-0.5">Staff:</p>
-                <p className="text-foreground/80 font-mono text-[11px]">staff@uni.edu / staff123</p>
-              </div>
-              <div className="glass-strong rounded-lg p-3 border border-white/50 bg-white/20">
-                <p className="font-semibold text-primary mb-0.5">Admin:</p>
-                <p className="text-foreground/80 font-mono text-[11px]">admin@uni.edu / admin123</p>
-              </div>
-            </div>
-          </div>
         </div>
       </div>
     </div>
