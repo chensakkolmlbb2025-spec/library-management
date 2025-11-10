@@ -87,7 +87,7 @@ export default function Landing() {
       </header>
 
       {/* Hero Section */}
-      <section className="relative min-h-screen flex items-center justify-center overflow-hidden pt-8">
+      <section className="relative min-h-screen flex justify-center overflow-hidden pt-8 ">
         {/* Animated Background */}
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
           <div className="absolute top-0 left-0 w-[600px] h-[600px] bg-primary/15 rounded-full blur-3xl animate-pulse"></div>
