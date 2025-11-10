@@ -1,0 +1,196 @@
+{
+  "profiles": [
+    {
+      "id": "1",
+      "email": "student@uni.edu",
+      "password": "student123",
+      "full_name": "John Student",
+      "role": "STUDENT",
+      "created_at": "2024-01-01T00:00:00Z",
+      "updated_at": "2024-01-01T00:00:00Z"
+    },
+    {
+      "id": "2",
+      "email": "staff@uni.edu",
+      "password": "staff123",
+      "full_name": "Jane Staff",
+      "role": "STAFF",
+      "created_at": "2024-01-01T00:00:00Z",
+      "updated_at": "2024-01-01T00:00:00Z"
+    },
+    {
+      "id": "3",
+      "email": "admin@uni.edu",
+      "password": "admin123",
+      "full_name": "Admin User",
+      "role": "ADMIN",
+      "created_at": "2024-01-01T00:00:00Z",
+      "updated_at": "2024-01-01T00:00:00Z"
+    }
+  ],
+  "books": [
+    {
+      "id": "b1",
+      "title": "The Great Gatsby",
+      "author": "F. Scott Fitzgerald",
+      "isbn": "978-0743273565",
+      "description": "A classic American novel set in the Jazz Age",
+      "genre": "Fiction",
+      "cover_image_url": "https://images-na.ssl-images-amazon.com/images/S/compressed.photo.goodreads.com/books/1490528560i/4671.jpg",
+      "total_copies": 5,
+      "available_copies": 5,
+      "created_at": "2024-01-01T00:00:00Z",
+      "updated_at": "2024-01-01T00:00:00Z"
+    },
+    {
+      "id": "b2",
+      "title": "To Kill a Mockingbird",
+      "author": "Harper Lee",
+      "isbn": "978-0061120084",
+      "description": "A gripping tale of racial injustice and childhood innocence",
+      "genre": "Fiction",
+      "cover_image_url": "https://images-na.ssl-images-amazon.com/images/S/compressed.photo.goodreads.com/books/1553383690i/2657.jpg",
+      "total_copies": 4,
+      "available_copies": 4,
+      "created_at": "2024-01-01T00:00:00Z",
+      "updated_at": "2024-01-01T00:00:00Z"
+    },
+    {
+      "id": "b3",
+      "title": "1984",
+      "author": "George Orwell",
+      "isbn": "978-0451524935",
+      "description": "A dystopian social science fiction novel",
+      "genre": "Science Fiction",
+      "cover_image_url": "https://images-na.ssl-images-amazon.com/images/S/compressed.photo.goodreads.com/books/1657781256i/61439040.jpg",
+      "total_copies": 6,
+      "available_copies": 6,
+      "created_at": "2024-01-01T00:00:00Z",
+      "updated_at": "2024-01-01T00:00:00Z"
+    },
+    {
+      "id": "b4",
+      "title": "Pride and Prejudice",
+      "author": "Jane Austen",
+      "isbn": "978-0141439518",
+      "description": "A romantic novel of manners",
+      "genre": "Romance",
+      "cover_image_url": "https://images-na.ssl-images-amazon.com/images/S/compressed.photo.goodreads.com/books/1320399351i/1885.jpg",
+      "total_copies": 3,
+      "available_copies": 3,
+      "created_at": "2024-01-01T00:00:00Z",
+      "updated_at": "2024-01-01T00:00:00Z"
+    },
+    {
+      "id": "b5",
+      "title": "The Catcher in the Rye",
+      "author": "J.D. Salinger",
+      "isbn": "978-0316769174",
+      "description": "A story about teenage rebellion",
+      "genre": "Fiction",
+      "cover_image_url": "https://images-na.ssl-images-amazon.com/images/S/compressed.photo.goodreads.com/books/1398034300i/5107.jpg",
+      "total_copies": 4,
+      "available_copies": 4,
+      "created_at": "2024-01-01T00:00:00Z",
+      "updated_at": "2024-01-01T00:00:00Z"
+    },
+    {
+      "id": "b6",
+      "title": "Harry Potter and the Sorcerer's Stone",
+      "author": "J.K. Rowling",
+      "isbn": "978-0439708180",
+      "description": "The first book in the Harry Potter series",
+      "genre": "Fantasy",
+      "cover_image_url": "https://images-na.ssl-images-amazon.com/images/S/compressed.photo.goodreads.com/books/1598823299i/42844155.jpg",
+      "total_copies": 8,
+      "available_copies": 8,
+      "created_at": "2024-01-01T00:00:00Z",
+      "updated_at": "2024-01-01T00:00:00Z"
+    },
+    {
+      "id": "b7",
+      "title": "The Hobbit",
+      "author": "J.R.R. Tolkien",
+      "isbn": "978-0547928227",
+      "description": "A fantasy adventure novel",
+      "genre": "Fantasy",
+      "cover_image_url": "https://images-na.ssl-images-amazon.com/images/S/compressed.photo.goodreads.com/books/1546071216i/5907.jpg",
+      "total_copies": 5,
+      "available_copies": 5,
+      "created_at": "2024-01-01T00:00:00Z",
+      "updated_at": "2024-01-01T00:00:00Z"
+    },
+    {
+      "id": "b8",
+      "title": "Fahrenheit 451",
+      "author": "Ray Bradbury",
+      "isbn": "978-1451673319",
+      "description": "A dystopian novel about censorship",
+      "genre": "Science Fiction",
+      "cover_image_url": "https://images-na.ssl-images-amazon.com/images/S/compressed.photo.goodreads.com/books/1383718290i/13079982.jpg",
+      "total_copies": 3,
+      "available_copies": 3,
+      "created_at": "2024-01-01T00:00:00Z",
+      "updated_at": "2024-01-01T00:00:00Z"
+    },
+    {
+      "id": "b9",
+      "title": "The Lord of the Rings",
+      "author": "J.R.R. Tolkien",
+      "isbn": "978-0544003415",
+      "description": "Epic high-fantasy trilogy",
+      "genre": "Fantasy",
+      "cover_image_url": "https://images-na.ssl-images-amazon.com/images/S/compressed.photo.goodreads.com/books/1566425108i/33.jpg",
+      "total_copies": 4,
+      "available_copies": 4,
+      "created_at": "2024-01-01T00:00:00Z",
+      "updated_at": "2024-01-01T00:00:00Z"
+    },
+    {
+      "id": "b10",
+      "title": "Brave New World",
+      "author": "Aldous Huxley",
+      "isbn": "978-0060850524",
+      "description": "A dystopian novel exploring technological control",
+      "genre": "Science Fiction",
+      "cover_image_url": "https://images-na.ssl-images-amazon.com/images/S/compressed.photo.goodreads.com/books/1575509280i/5129.jpg",
+      "total_copies": 3,
+      "available_copies": 3,
+      "created_at": "2024-01-01T00:00:00Z",
+      "updated_at": "2024-01-01T00:00:00Z"
+    }
+  ],
+  "borrow_requests": [],
+  "loans": [],
+  "fines": [],
+  "system_settings": [
+    {
+      "id": "s1",
+      "setting_key": "loan_period_days",
+      "setting_value": "14",
+      "updated_at": "2024-01-01T00:00:00Z",
+      "updated_by": null
+    },
+    {
+      "id": "s2",
+      "setting_key": "fine_rate_per_day",
+      "setting_value": "0.50",
+      "updated_at": "2024-01-01T00:00:00Z",
+      "updated_by": null
+    },
+    {
+      "id": "s3",
+      "setting_key": "max_renewals",
+      "setting_value": "2",
+      "updated_at": "2024-01-01T00:00:00Z",
+      "updated_by": null
+    },
+    {
+      "id": "s4",
+      "setting_key": "max_active_loans",
+      "setting_value": "5",
+      "updated_at": "2024-01-01T00:00:00Z",
+      "updated_by": null
+    }
+  ]
+}

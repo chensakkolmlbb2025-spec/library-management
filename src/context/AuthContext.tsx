@@ -1,6 +1,5 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { supabase } from '@/integrations/supabase/client';
-import type { User, Session } from '@supabase/supabase-js';
+import { db, type Profile as DBProfile } from '@/lib/database';
 
 export type UserRole = 'STUDENT' | 'STAFF' | 'ADMIN';
 
@@ -12,9 +11,9 @@ export interface Profile {
 }
 
 interface AuthContextType {
-  user: User | null;
+  user: DBProfile | null;
   profile: Profile | null;
-  session: Session | null;
+  session: { user: DBProfile } | null;
   login: (email: string, password: string) => Promise<void>;
   signup: (email: string, password: string, fullName: string, role: UserRole) => Promise<void>;
   logout: () => Promise<void>;
@@ -24,103 +23,92 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
+const SESSION_KEY = 'glasslib_session';
+
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
-  const [user, setUser] = useState<User | null>(null);
+  const [user, setUser] = useState<DBProfile | null>(null);
   const [profile, setProfile] = useState<Profile | null>(null);
-  const [session, setSession] = useState<Session | null>(null);
+  const [session, setSession] = useState<{ user: DBProfile } | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    // Set up auth state listener
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (event, session) => {
-        setSession(session);
-        setUser(session?.user ?? null);
-        
-        // Fetch profile when user logs in
-        if (session?.user) {
-          setTimeout(() => {
-            fetchProfile(session.user.id);
-          }, 0);
-        } else {
-          setProfile(null);
+    // Check for existing session in localStorage
+    const checkSession = () => {
+      const storedSession = localStorage.getItem(SESSION_KEY);
+      if (storedSession) {
+        try {
+          const parsedSession = JSON.parse(storedSession);
+          setUser(parsedSession.user);
+          setProfile({
+            id: parsedSession.user.id,
+            email: parsedSession.user.email,
+            full_name: parsedSession.user.full_name,
+            role: parsedSession.user.role,
+          });
+          setSession(parsedSession);
+        } catch (error) {
+          console.error('Error parsing session:', error);
+          localStorage.removeItem(SESSION_KEY);
         }
       }
-    );
-
-    // Check for existing session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-      setUser(session?.user ?? null);
-      if (session?.user) {
-        fetchProfile(session.user.id);
-      }
       setIsLoading(false);
-    });
+    };
 
-    return () => subscription.unsubscribe();
+    checkSession();
   }, []);
-
-  const fetchProfile = async (userId: string) => {
-    try {
-      const { data, error } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('id', userId)
-        .single();
-
-      if (error) throw error;
-      setProfile(data as Profile);
-    } catch (error) {
-      console.error('Error fetching profile:', error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
 
   const login = async (email: string, password: string) => {
     try {
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      });
+      const { user: loggedInUser, error } = await db.login(email, password);
 
-      if (error) throw error;
-      
-      if (data.user) {
-        await fetchProfile(data.user.id);
+      if (error || !loggedInUser) {
+        throw error || new Error('Login failed');
       }
-    } catch (error: any) {
-      throw new Error(error.message || 'Login failed');
+
+      const newSession = { user: loggedInUser };
+      localStorage.setItem(SESSION_KEY, JSON.stringify(newSession));
+
+      setUser(loggedInUser);
+      setProfile({
+        id: loggedInUser.id,
+        email: loggedInUser.email,
+        full_name: loggedInUser.full_name,
+        role: loggedInUser.role,
+      });
+      setSession(newSession);
+    } catch (err) {
+      const e = err as Error;
+      throw new Error(e?.message || 'Login failed');
     }
   };
 
   const signup = async (email: string, password: string, fullName: string, role: UserRole) => {
     try {
-      const { data, error } = await supabase.auth.signUp({
-        email,
-        password,
-        options: {
-          data: {
-            full_name: fullName,
-            role: role,
-          },
-          emailRedirectTo: `${window.location.origin}/`,
-        },
-      });
+      const { user: newUser, error } = await db.signup(email, password, fullName, role);
 
-      if (error) throw error;
-      
-      if (data.user) {
-        await fetchProfile(data.user.id);
+      if (error || !newUser) {
+        throw error || new Error('Signup failed');
       }
-    } catch (error: any) {
-      throw new Error(error.message || 'Signup failed');
+
+      const newSession = { user: newUser };
+      localStorage.setItem(SESSION_KEY, JSON.stringify(newSession));
+
+      setUser(newUser);
+      setProfile({
+        id: newUser.id,
+        email: newUser.email,
+        full_name: newUser.full_name,
+        role: newUser.role,
+      });
+      setSession(newSession);
+    } catch (err) {
+      const e = err as Error;
+      throw new Error(e?.message || 'Signup failed');
     }
   };
 
   const logout = async () => {
-    await supabase.auth.signOut();
+    localStorage.removeItem(SESSION_KEY);
     setUser(null);
     setProfile(null);
     setSession(null);

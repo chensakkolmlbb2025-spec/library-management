@@ -28,11 +28,11 @@ A modern, beautiful library management system built with React.js featuring iOS-
 - **React 18** with TypeScript
 - **Vite** for fast development
 - **Tailwind CSS** with custom glassmorphism design system
-- **Axios** for API communication
 - **React Router** for navigation
 - **Context API** for state management
 - **Shadcn UI** components
 - **Lucide React** icons
+- **Local JSON Database** with localStorage persistence
 
 ## Getting Started
 
@@ -54,12 +54,7 @@ cd university-library-system
 npm install
 ```
 
-3. Create a `.env` file in the root directory:
-```env
-VITE_API_URL=http://localhost:5000/api
-```
-
-4. Start the development server:
+3. Start the development server:
 ```bash
 npm run dev
 ```
@@ -74,37 +69,13 @@ Use these credentials to test different roles:
 - **Staff**: staff@uni.edu / staff123
 - **Admin**: admin@uni.edu / admin123
 
-## Backend API
+## Data Storage
 
-This frontend expects a REST API with the following endpoints:
+This application uses a **local JSON database** stored in `localStorage`. All data persists in your browser.
 
-### Authentication
-- `POST /api/auth/login` - Login with email and password
-
-### Books
-- `GET /api/books?search={query}` - Search books
-- `POST /api/books` - Add new book (Staff/Admin)
-- `PATCH /api/books/:id` - Update book (Staff/Admin)
-
-### Borrow Requests
-- `GET /api/requests` - Get all requests (Staff)
-- `POST /api/borrow-requests` - Create borrow request (Student)
-- `PATCH /api/requests/:id/approve` - Approve request (Staff)
-- `PATCH /api/requests/:id/reject` - Reject request (Staff)
-
-### User Management
-- `GET /api/users` - Get all users (Admin)
-- `POST /api/users` - Create user (Admin)
-- `PATCH /api/users/:id` - Update user (Admin)
-
-### Loans & Fines
-- `GET /api/user/loans` - Get user's loans
-- `GET /api/user/fines` - Get user's fines
-- `PATCH /api/loans/:id/renew` - Renew loan
-
-### Settings
-- `GET /api/settings` - Get system settings (Admin)
-- `PATCH /api/settings` - Update settings (Admin)
+- Initial data is loaded from `src/lib/db.json`
+- All changes are saved to `localStorage` with key `glasslib_database`
+- To reset to initial state, clear your browser's localStorage
 
 ## Design System
 
@@ -126,14 +97,17 @@ src/
 │   └── ProtectedRoute.tsx
 ├── context/
 │   └── AuthContext.tsx
+├── lib/
+│   ├── database.ts   # Local JSON database service
+│   ├── db.json       # Initial database data
+│   └── utils.ts      # Utility functions
 ├── pages/
 │   ├── Login.tsx
+│   ├── Home.tsx
 │   ├── StudentDashboard.tsx
 │   ├── StaffDashboard.tsx
 │   ├── AdminDashboard.tsx
 │   └── Unauthorized.tsx
-├── services/
-│   └── api.ts        # Axios configuration
 └── App.tsx
 ```
 

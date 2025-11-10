@@ -19,7 +19,7 @@ export default function Unauthorized() {
             You don't have permission to access this page.
           </p>
         </div>
-        <Button onClick={() => navigate(-1)} className="bg-primary hover:bg-primary-hover">
+        <Button onClick={() => navigate(-1)} className="btn-primary">
           Go Back
         </Button>
       </div>
