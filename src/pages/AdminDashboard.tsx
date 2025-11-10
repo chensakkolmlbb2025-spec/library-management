@@ -36,6 +36,7 @@ import type { UserRole, Profile as AuthProfile } from "@/context/AuthContext";
 import { UserDialog } from "@/components/UserDialog";
 import { BookDialog } from "@/components/BookDialog";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
+import { RejectBorrowDialog } from "@/components/RejectBorrowDialog";
 
 type Profile = AuthProfile & {
   created_at: string;
@@ -97,6 +98,7 @@ export default function AdminDashboard() {
   const [isLoading, setIsLoading] = useState(false);
   const [activeLoans, setActiveLoans] = useState<Loan[]>([]);
   const [books, setBooks] = useState<Book[]>([]);
+  const [borrowRequests, setBorrowRequests] = useState<BorrowRequest[]>([]);
   
   // Dialog states
   const [userDialog, setUserDialog] = useState<{
@@ -125,6 +127,17 @@ export default function AdminDashboard() {
     type: 'user',
     id: '',
     name: '',
+  });
+  const [rejectDialog, setRejectDialog] = useState<{
+    open: boolean;
+    requestId: string;
+    borrowerName: string;
+    bookTitle: string;
+  }>({
+    open: false,
+    requestId: '',
+    borrowerName: '',
+    bookTitle: '',
   });
 
   const fetchActiveLoans = useCallback(async () => {
@@ -191,12 +204,24 @@ export default function AdminDashboard() {
     }
   }, []);
 
+  const fetchBorrowRequests = useCallback(async () => {
+    try {
+      const data = await db.getBorrowRequestsWithDetails();
+      setBorrowRequests(data || []);
+    } catch (error) {
+      const err = error as Error;
+      console.error("Failed to fetch borrow requests:", err);
+      toast.error("Failed to fetch borrow requests");
+    }
+  }, []);
+
   useEffect(() => {
     fetchProfiles();
     fetchSettings();
     fetchActiveLoans();
     fetchBooks();
-  }, [fetchActiveLoans, fetchProfiles, fetchSettings, fetchBooks]);
+    fetchBorrowRequests();
+  }, [fetchActiveLoans, fetchProfiles, fetchSettings, fetchBooks, fetchBorrowRequests]);
 
   const handleUserSubmit = async (userData: any) => {
     setIsLoading(true);
@@ -333,6 +358,53 @@ export default function AdminDashboard() {
     }
   };
 
+  const handleApproveRequest = async (requestId: string) => {
+    try {
+      if (!user?.id) {
+        toast.error("User not authenticated");
+        return;
+      }
+
+      const result = await db.approveBorrowRequest(requestId, user.id);
+      
+      if (!result.success) {
+        toast.error(result.error || "Failed to approve request");
+        return;
+      }
+
+      toast.success("Borrow request approved successfully!");
+      await fetchBorrowRequests();
+      await fetchActiveLoans();
+    } catch (error) {
+      const err = error as Error;
+      console.error("Error approving request:", err);
+      toast.error(err.message || "Failed to approve request");
+    }
+  };
+
+  const handleRejectRequest = async (requestId: string, reason: string) => {
+    try {
+      if (!user?.id) {
+        toast.error("User not authenticated");
+        return;
+      }
+
+      const success = await db.rejectBorrowRequest(requestId, user.id, reason);
+
+      if (!success) {
+        toast.error("Failed to reject request");
+        return;
+      }
+
+      toast.success("Borrow request rejected");
+      await fetchBorrowRequests();
+    } catch (error) {
+      const err = error as Error;
+      console.error("Error rejecting request:", err);
+      toast.error(err.message || "Failed to reject request");
+    }
+  };
+
   const studentCount = profiles.filter((p) => p.role === "STUDENT").length;
   const staffCount = profiles.filter((p) => p.role === "STAFF").length;
   const adminCount = profiles.filter((p) => p.role === "ADMIN").length;
@@ -431,6 +503,13 @@ export default function AdminDashboard() {
             >
               <UserCheck className="h-4 w-4 mr-2" />
               Staff
+            </TabsTrigger>
+            <TabsTrigger 
+              value="requests"
+              className="data-[state=active]:bg-primary data-[state=active]:text-white text-sm md:text-base font-medium px-4 md:px-6 py-2.5 rounded-xl transition-all"
+            >
+              <Package className="h-4 w-4 mr-2" />
+              Requests
             </TabsTrigger>
             <TabsTrigger 
               value="loans"
@@ -594,6 +673,99 @@ export default function AdminDashboard() {
                     the Users tab.
                   </div>
                 )}
+            </div>
+          </TabsContent>
+
+          <TabsContent value="requests" className="space-y-4">
+            <div className="glass-strong rounded-2xl p-6 border-2 border-white/60">
+              <div className="flex items-center justify-between mb-6">
+                <h3 className="text-2xl font-bold text-foreground flex items-center gap-2">
+                  <Package className="h-6 w-6 text-warning" />
+                  Borrow Requests
+                </h3>
+                <Badge variant="secondary" className="bg-warning/15 text-warning border-warning/30 text-base px-3 py-1">
+                  {borrowRequests.filter(r => r.status === 'PENDING').length} Pending
+                </Badge>
+              </div>
+
+              {borrowRequests.filter(r => r.status === 'PENDING').length === 0 ? (
+                <div className="text-center py-12 bg-muted/5 rounded-xl border-2 border-dashed border-muted/30">
+                  <Package className="h-16 w-16 text-muted-foreground/40 mx-auto mb-3" />
+                  <p className="text-muted-foreground text-lg">No pending requests</p>
+                  <p className="text-muted-foreground/70 text-sm mt-1">New requests will appear here</p>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {borrowRequests
+                    .filter(r => r.status === 'PENDING')
+                    .map((request) => (
+                      <Card key={request.id} className="glass-strong border-2 border-white/70 hover:border-primary/30 transition-all p-5 shadow-md">
+                        <div className="flex gap-5">
+                          {/* Book Cover */}
+                          <div className="flex-shrink-0 w-20 h-28 bg-gradient-to-br from-primary/15 to-primary/5 rounded-lg overflow-hidden border-2 border-primary/20 shadow-sm">
+                            {request.books?.cover_image_url ? (
+                              <img
+                                src={request.books.cover_image_url}
+                                alt={`${request.books.title} cover`}
+                                className="w-full h-full object-cover"
+                                onError={(e) => {
+                                  const target = e.target as HTMLImageElement;
+                                  target.style.display = 'none';
+                                  target.nextElementSibling?.classList.remove('hidden');
+                                }}
+                              />
+                            ) : null}
+                            <div className={`flex items-center justify-center w-full h-full ${request.books?.cover_image_url ? 'hidden' : ''}`}>
+                              <BookOpen className="w-10 h-10 text-primary/40" />
+                            </div>
+                          </div>
+                          
+                          {/* Book Details */}
+                          <div className="flex-1 min-w-0">
+                            <h4 className="font-bold text-lg text-foreground mb-1 truncate">
+                              {request.books?.title || 'Unknown Book'}
+                            </h4>
+                            <p className="text-sm text-muted-foreground mb-3">
+                              by {request.books?.author || 'Unknown Author'}
+                            </p>
+                            <div className="flex flex-wrap items-center gap-3 mb-3">
+                              <Badge variant="secondary" className="bg-primary/12 text-primary border-primary/25 font-medium">
+                                Student: {request.profiles?.full_name || 'Unknown'}
+                              </Badge>
+                              <Badge variant="secondary" className="bg-muted/30 text-muted-foreground border-muted/40 font-medium">
+                                Requested: {new Date(request.request_date).toLocaleDateString()}
+                              </Badge>
+                            </div>
+                            <div className="flex gap-2">
+                              <Button
+                                size="sm"
+                                onClick={() => handleApproveRequest(request.id)}
+                                className="btn-success text-white shadow-sm"
+                              >
+                                <CheckCircle className="h-4 w-4 mr-1.5" />
+                                Approve
+                              </Button>
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => setRejectDialog({
+                                  open: true,
+                                  requestId: request.id,
+                                  borrowerName: request.profiles?.full_name || 'Unknown',
+                                  bookTitle: request.books?.title || 'Unknown Book',
+                                })}
+                                className="btn-destructive"
+                              >
+                                <XCircle className="h-4 w-4 mr-1.5" />
+                                Reject
+                              </Button>
+                            </div>
+                          </div>
+                        </div>
+                      </Card>
+                    ))}
+                </div>
+              )}
             </div>
           </TabsContent>
 
@@ -891,6 +1063,14 @@ export default function AdminDashboard() {
           description={`Are you sure you want to delete "${deleteDialog.name}"? This action cannot be undone.`}
           confirmText="Delete"
           variant="destructive"
+        />
+
+        <RejectBorrowDialog
+          open={rejectDialog.open}
+          onOpenChange={(open) => setRejectDialog({ ...rejectDialog, open })}
+          onConfirm={(reason) => handleRejectRequest(rejectDialog.requestId, reason)}
+          borrowerName={rejectDialog.borrowerName}
+          bookTitle={rejectDialog.bookTitle}
         />
       </div>
     </Layout>
