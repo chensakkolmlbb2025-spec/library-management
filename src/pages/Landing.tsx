@@ -87,7 +87,7 @@ export default function Landing() {
       </header>
 
       {/* Hero Section */}
-      <section className="relative min-h-screen flex items-center justify-center overflow-hidden pt-16">
+      <section className="relative min-h-screen flex items-center justify-center overflow-hidden pt-8">
         {/* Animated Background */}
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
           <div className="absolute top-0 left-0 w-[600px] h-[600px] bg-primary/15 rounded-full blur-3xl animate-pulse"></div>
@@ -95,7 +95,7 @@ export default function Landing() {
           <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[400px] h-[400px] bg-warning/10 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '2s' }}></div>
         </div>
 
-        <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
+        <div className="relative z-10 w-full max-w-[95vw] lg:max-w-[90vw] xl:max-w-[85vw] mx-auto px-4 sm:px-6 lg:px-8 py-12">
           {/* Glass Card Container */}
           <div className="glass-strong rounded-3xl p-8 md:p-12 border-2 border-white/70 shadow-2xl">
             <div className="grid lg:grid-cols-2 gap-12 items-center">
