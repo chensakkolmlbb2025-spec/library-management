@@ -120,7 +120,7 @@ export default function Landing() {
                     <div className="absolute inset-0 bg-gradient-to-r from-primary/0 via-white/20 to-primary/0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000"></div>
                   </Button>
                   <Button 
-                    onClick={() => navigate('/home')}
+                    onClick={() => navigate('/login')}
                     variant="outline" 
                     className="group btn-secondary px-8 py-6 text-lg h-auto border-2 hover:border-primary/60"
                   >
@@ -398,7 +398,7 @@ export default function Landing() {
                 <Sparkles className="ml-2 h-6 w-6 group-hover:rotate-12 transition-transform" />
               </Button>
               <Button 
-                onClick={() => navigate('/home')}
+                onClick={() => navigate('/login')}
                 variant="outline" 
                 className="btn-secondary px-10 py-7 text-xl h-auto border-2"
               >
