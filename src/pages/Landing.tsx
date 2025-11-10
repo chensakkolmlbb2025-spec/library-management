@@ -13,7 +13,8 @@ import {
   Award,
   Zap,
   Heart,
-  Globe
+  Globe,
+  LogIn
 } from "lucide-react";
 import { DotLottieReact } from '@lottiefiles/dotlottie-react';
 import { useNavigate } from "react-router-dom";
@@ -23,8 +24,70 @@ export default function Landing() {
 
   return (
     <div className="min-h-screen">
+      {/* Navigation Bar */}
+      <header className="glass-navbar sticky top-0 z-50 shadow-lg">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex items-center justify-between h-16">
+            {/* Logo Section */}
+            <div className="flex items-center gap-3 flex-shrink-0 cursor-pointer" onClick={() => navigate('/')}>
+              <div className="glass-strong p-2.5 rounded-xl border-2 border-white/60 shadow-sm">
+                <BookOpen className="h-6 w-6 text-primary" />
+              </div>
+              <div>
+                <h1 className="text-xl font-bold text-foreground">
+                  University Library
+                </h1>
+                <p className="text-[10px] text-muted-foreground uppercase tracking-wider font-medium">
+                  Digital Learning Hub
+                </p>
+              </div>
+            </div>
+
+            {/* Navigation Links */}
+            <nav className="hidden md:flex items-center gap-2">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => navigate('/home')}
+                className="btn-secondary px-4 py-2 rounded-xl font-medium"
+              >
+                <BookOpen className="h-4 w-4 mr-2" />
+                Browse Books
+              </Button>
+              <Button
+                onClick={() => navigate('/login')}
+                className="btn-primary px-6 py-2 rounded-xl font-medium shadow-sm"
+              >
+                <LogIn className="h-4 w-4 mr-2" />
+                Sign In
+              </Button>
+            </nav>
+
+            {/* Mobile Navigation */}
+            <div className="flex md:hidden items-center gap-2">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => navigate('/home')}
+                className="btn-secondary p-2 rounded-xl"
+              >
+                <BookOpen className="h-4 w-4" />
+              </Button>
+              <Button
+                size="sm"
+                onClick={() => navigate('/login')}
+                className="btn-primary px-4 py-2 rounded-xl"
+              >
+                <LogIn className="h-4 w-4 mr-1" />
+                Sign In
+              </Button>
+            </div>
+          </div>
+        </div>
+      </header>
+
       {/* Hero Section */}
-      <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
+      <section className="relative min-h-screen flex items-center justify-center overflow-hidden pt-16">
         {/* Animated Background */}
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
           <div className="absolute top-0 left-0 w-[600px] h-[600px] bg-primary/15 rounded-full blur-3xl animate-pulse"></div>
@@ -33,81 +96,84 @@ export default function Landing() {
         </div>
 
         <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
-          <div className="grid lg:grid-cols-2 gap-12 items-center">
-            {/* Left Content */}
-            <div className="space-y-8 animate-slide-in">
-              {/* Badge */}
-              <div className="inline-flex items-center gap-2 bg-gradient-to-r from-primary/20 to-success/20 border-2 border-primary/40 rounded-full px-6 py-2 backdrop-blur-sm">
-                <Sparkles className="h-5 w-5 text-primary animate-pulse" />
-                <span className="text-sm font-bold bg-gradient-to-r from-primary to-success bg-clip-text text-transparent">
-                  Welcome to the Future of Libraries
-                </span>
-              </div>
-
-              {/* Main Heading */}
-              <div className="space-y-4">
-                <h1 className="text-5xl md:text-7xl font-black leading-tight tracking-tight">
-                  <span className="text-foreground">Your Gateway to</span>
-                  <br />
-                  <span className="bg-gradient-to-r from-primary via-success to-primary bg-clip-text text-transparent bg-[length:200%_auto] animate-gradient">
-                    Endless Knowledge
+          {/* Glass Card Container */}
+          <div className="glass-strong rounded-3xl p-8 md:p-12 border-2 border-white/70 shadow-2xl">
+            <div className="grid lg:grid-cols-2 gap-12 items-center">
+              {/* Left Content */}
+              <div className="space-y-8 animate-slide-in">
+                {/* Badge */}
+                <div className="inline-flex items-center gap-2 bg-gradient-to-r from-primary/20 to-success/20 border-2 border-primary/40 rounded-full px-6 py-2 backdrop-blur-sm">
+                  <Sparkles className="h-5 w-5 text-primary animate-pulse" />
+                  <span className="text-sm font-bold bg-gradient-to-r from-primary to-success bg-clip-text text-transparent">
+                    Welcome to the Future of Libraries
                   </span>
-                </h1>
-                <p className="text-xl text-muted-foreground leading-relaxed max-w-xl">
-                  Discover, borrow, and explore thousands of books at your fingertips. 
-                  Join our digital library and embark on your learning journey today.
-                </p>
+                </div>
+
+                {/* Main Heading */}
+                <div className="space-y-4">
+                  <h1 className="text-5xl md:text-7xl font-black leading-tight tracking-tight">
+                    <span className="text-foreground">Your Gateway to</span>
+                    <br />
+                    <span className="bg-gradient-to-r from-primary via-success to-primary bg-clip-text text-transparent bg-[length:200%_auto] animate-gradient">
+                      Endless Knowledge
+                    </span>
+                  </h1>
+                  <p className="text-xl text-muted-foreground leading-relaxed max-w-xl">
+                    Discover, borrow, and explore thousands of books at your fingertips. 
+                    Join our digital library and embark on your learning journey today.
+                  </p>
+                </div>
+
+                {/* CTA Buttons */}
+                <div className="flex flex-wrap gap-4">
+                  <Button 
+                    onClick={() => navigate('/login')}
+                    className="group btn-primary px-8 py-6 text-lg h-auto shadow-xl hover:shadow-2xl relative overflow-hidden"
+                  >
+                    <span className="relative z-10 flex items-center">
+                      Get Started
+                      <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
+                    </span>
+                    <div className="absolute inset-0 bg-gradient-to-r from-primary/0 via-white/20 to-primary/0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000"></div>
+                  </Button>
+                  <Button 
+                    onClick={() => navigate('/home')}
+                    variant="outline" 
+                    className="group btn-secondary px-8 py-6 text-lg h-auto border-2 hover:border-primary/60"
+                  >
+                    Browse Books
+                    <BookOpen className="ml-2 h-5 w-5 group-hover:scale-110 transition-transform" />
+                  </Button>
+                </div>
+
+                {/* Stats */}
+                <div className="grid grid-cols-3 gap-6 pt-8">
+                  <div className="text-center">
+                    <div className="text-3xl font-black text-primary">10K+</div>
+                    <div className="text-sm text-muted-foreground font-medium">Books</div>
+                  </div>
+                  <div className="text-center">
+                    <div className="text-3xl font-black text-success">5K+</div>
+                    <div className="text-sm text-muted-foreground font-medium">Members</div>
+                  </div>
+                  <div className="text-center">
+                    <div className="text-3xl font-black text-warning">24/7</div>
+                    <div className="text-sm text-muted-foreground font-medium">Access</div>
+                  </div>
+                </div>
               </div>
 
-              {/* CTA Buttons */}
-              <div className="flex flex-wrap gap-4">
-                <Button 
-                  onClick={() => navigate('/login')}
-                  className="group btn-primary px-8 py-6 text-lg h-auto shadow-xl hover:shadow-2xl relative overflow-hidden"
-                >
-                  <span className="relative z-10 flex items-center">
-                    Get Started
-                    <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
-                  </span>
-                  <div className="absolute inset-0 bg-gradient-to-r from-primary/0 via-white/20 to-primary/0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000"></div>
-                </Button>
-                <Button 
-                  onClick={() => navigate('/home')}
-                  variant="outline" 
-                  className="group btn-secondary px-8 py-6 text-lg h-auto border-2 hover:border-primary/60"
-                >
-                  Browse Books
-                  <BookOpen className="ml-2 h-5 w-5 group-hover:scale-110 transition-transform" />
-                </Button>
-              </div>
-
-              {/* Stats */}
-              <div className="grid grid-cols-3 gap-6 pt-8">
-                <div className="text-center">
-                  <div className="text-3xl font-black text-primary">10K+</div>
-                  <div className="text-sm text-muted-foreground font-medium">Books</div>
+              {/* Right Visual - Lottie Animation */}
+              <div className="relative hidden lg:flex items-center justify-center animate-fade-in" style={{ animationDelay: '0.2s' }}>
+                <div className="relative w-full h-[600px] flex items-center justify-center">
+                  <div className="absolute inset-0 bg-gradient-to-br from-primary/20 to-success/20 rounded-full blur-3xl"></div>
+                  <DotLottieReact
+                    src="https://lottie.host/14ba68fb-5b56-47b5-b343-48c4554f118e/NClhoR6wwX.lottie"
+                    loop
+                    autoplay
+                    className="relative z-10 w-full h-full"
+                  />
                 </div>
-                <div className="text-center">
-                  <div className="text-3xl font-black text-success">5K+</div>
-                  <div className="text-sm text-muted-foreground font-medium">Members</div>
-                </div>
-                <div className="text-center">
-                  <div className="text-3xl font-black text-warning">24/7</div>
-                  <div className="text-sm text-muted-foreground font-medium">Access</div>
-                </div>
-              </div>
-            </div>
-
-            {/* Right Visual - Lottie Animation */}
-            <div className="relative hidden lg:flex items-center justify-center animate-fade-in" style={{ animationDelay: '0.2s' }}>
-              <div className="relative w-full h-[600px] flex items-center justify-center">
-                <div className="absolute inset-0 bg-gradient-to-br from-primary/20 to-success/20 rounded-full blur-3xl"></div>
-                <DotLottieReact
-                  src="https://lottie.host/14ba68fb-5b56-47b5-b343-48c4554f118e/NClhoR6wwX.lottie"
-                  loop
-                  autoplay
-                  className="relative z-10 w-full h-full"
-                />
               </div>
             </div>
           </div>
