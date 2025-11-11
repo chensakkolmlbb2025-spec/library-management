@@ -21,7 +21,7 @@ export default function Login() {
     try {
       await login(email, password);
       toast.success("Login successful!");
-      navigate("/");
+      navigate("/dashboard");
     } catch (error) {
       const err = error as Error;
       toast.error(
@@ -69,6 +69,7 @@ export default function Login() {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   className="pl-10 glass border-white/60 focus:border-primary/60 rounded-xl h-11 text-foreground placeholder:text-muted-foreground/60"
+                  autoComplete="email"
                   required
                 />
               </div>
@@ -85,6 +86,7 @@ export default function Login() {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   className="pl-10 glass border-white/60 focus:border-primary/60 rounded-xl h-11 text-foreground"
+                  autoComplete="current-password"
                   required
                 />
               </div>
