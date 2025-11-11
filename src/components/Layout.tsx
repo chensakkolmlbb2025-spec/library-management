@@ -58,7 +58,7 @@ export const Layout = ({ children }: LayoutProps) => {
                 <Button
                   variant="ghost"
                   size="sm"
-                  onClick={() => navigate("/")}
+                  onClick={() => navigate("/Home")}
                   className="btn-secondary px-4 py-2 rounded-xl font-medium group"
                 >
                   <BookOpen className="h-4 w-4 mr-2 group-hover:text-white transition-colors" />
